@@ -17,7 +17,7 @@ function AddContent() {
   return (
     <>
       {' '}
-      +
+      +Add
       {' '}
       {FOOD_NAME}
     </>
@@ -30,7 +30,7 @@ export default function AddPill({ ingredientAdd }: Props) {
     <Pill onClick={() => setClick(true)}>
       {!clicked
         ? <AddContent />
-        : <SearchPill ingredientAdd={ingredientAdd} />}
+        : <SearchPill ingredientAdd={ingredientAdd} hideSearch={() => setClick(false)} />}
     </Pill>
   );
 }

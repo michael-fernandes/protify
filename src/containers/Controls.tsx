@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import styled from 'styled-components';
-import AddPill from '../components/ingredient/AddPill';
+import AddPill, { Pill } from '../components/ingredient/AddPill';
 import { Ingredient } from '../types/types';
 
 const ControlDiv = styled.div`
@@ -18,11 +18,36 @@ export default function Controls() {
     setIngredients([newIngredient, ...ingredients]);
   };
 
-  const handleIngredientRemove = (removeIngredient: Ingredient) => {
-    setIngredients(ingredients.filter((i) => i.description !== removeIngredient.description));
-  };
+  // const handleIngredientRemove = (removeIngredient: Ingredient) => {
+  //   setIngredients(ingredients.filter((i) => i.description !== removeIngredient.description));
+  // };
+  console.log(ingredients);
 
   return (
-    <ControlDiv><AddPill ingredientAdd={handleIngredientAdd} /></ControlDiv>
+    <ControlDiv>
+      {ingredients.map((i) => (
+        <Pill>
+          <h4>
+            {' '}
+            {i.description}
+          </h4>
+          <div>
+            Serving Size:
+            {' '}
+            {i.servingSize}
+            {' '}
+            (
+            {i.servingSizeUnit}
+            )
+          </div>
+          <div>
+            Total Protein:
+            {i.foodNutrients.find((d) => d.nutrientName === 'Protein')?.value}
+          </div>
+        </Pill>
+      ))}
+      {ingredients.length < 4
+        && <AddPill ingredientAdd={handleIngredientAdd} />}
+    </ControlDiv>
   );
 }
