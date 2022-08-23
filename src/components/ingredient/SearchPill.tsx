@@ -1,7 +1,7 @@
 import {
   ChangeEvent,
   SyntheticEvent,
-  useEffect, useMemo, useState,
+  useEffect, useMemo, useRef, useState,
 } from 'react';
 
 import { useQuery } from 'react-query';
@@ -9,9 +9,17 @@ import {
   Autocomplete, CircularProgress, TextField,
 } from '@mui/material';
 import { throttle } from 'lodash';
+import styled from 'styled-components';
 import { Ingredient, IngredientOption as IngredientOpt } from '../../types/types';
 import searchFoods from '../../api/searchFoods';
 import getProtein from '../../utilities/getProtein';
+
+const SearchContainer = styled.div`
+  width: 100%;
+  border: 1px solid grey;
+`;
+
+const searchClassname = 'search-classname';
 
 type Props = {
   ingredientAdd: (newIngredient: Ingredient) => void
@@ -21,30 +29,28 @@ type Props = {
 
 export default function SearchPill({ ingredientAdd, hideSearch, defaultIngredient }: Props) {
   const [search, setSearch] = useState(defaultIngredient?.description || '');
-  const [searchDebounced, setSearchDebounce] = useState('');
+  const [searchThrottled, setSearchThrottle] = useState('');
+  const throttleSearch = throttle(setSearchThrottle, 1000);
+  const autoCompleteRef = useRef(null);
 
-  const { data = [], status } = useQuery(['search', searchDebounced], searchFoods, {
+  const { data = [], status } = useQuery(['search', searchThrottled], searchFoods, {
     enabled: !!search,
   });
 
-  const throttleSearch = throttle(setSearchDebounce, 1000);
-
   useEffect(() => throttleSearch(search), [search]);
 
-  const foodOptions = useMemo((): IngredientOpt[] => {
-    const { foods } = data;
-    return foods?.reduce((acc: Ingredient[], currItem: Ingredient): IngredientOpt[] => {
-      const proteins = getProtein(currItem);
-      if (Object.keys(proteins).length) {
-        acc.push({
-          ...currItem,
-          label: currItem.description || '',
-          id: currItem.fdcId,
-        });
-      }
-      return acc;
-    }, []);
-  }, [data]) || [];
+  const foodOpts = useMemo(() => data.foods?.reduce((acc: Ingredient[], currItem: Ingredient) => {
+    const proteins = getProtein(currItem);
+    if (Object.keys(proteins).length) {
+      acc.push({
+        ...currItem,
+        label: currItem.description || '',
+        id: currItem.fdcId,
+        proteins,
+      });
+    }
+    return acc;
+  }, []), [data]) || [];
 
   const handleInputChange = (
     event: ChangeEvent<HTMLTextAreaElement | HTMLInputElement>,
@@ -64,13 +70,14 @@ export default function SearchPill({ ingredientAdd, hideSearch, defaultIngredien
   const onInputBlur = () => !search.length && hideSearch();
 
   return (
-    <div>
+    <SearchContainer className={searchClassname}>
       <Autocomplete
+        className="autocomplete"
         loading={status === 'loading'}
         loadingText={<CircularProgress size={20} />}
         onChange={handleAutocompleteChange}
         filterOptions={(x) => x}
-        options={foodOptions}
+        options={foodOpts}
         inputValue={search}
         getOptionLabel={(option: IngredientOpt) => option.label}
         renderOption={(props, option) => (
@@ -81,6 +88,7 @@ export default function SearchPill({ ingredientAdd, hideSearch, defaultIngredien
         )}
         renderInput={(params) => (
           <TextField
+            ref={autoCompleteRef}
             // eslint-disable-next-line react/jsx-props-no-spreading
             {...params}
             onBlur={onInputBlur}
@@ -92,6 +100,6 @@ export default function SearchPill({ ingredientAdd, hideSearch, defaultIngredien
         clearOnEscape
         selectOnFocus
       />
-    </div>
+    </SearchContainer>
   );
 }

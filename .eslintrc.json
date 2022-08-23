@@ -2,5 +2,9 @@
   "extends": ["airbnb",  "airbnb-typescript", "plugin:react/jsx-runtime"],
   "parserOptions": {
     "project": "./tsconfig.json"
+  },
+  "rules": {
+    "react/require-default-props": "off",
+    "react/prop-types": "off"
   }
 }

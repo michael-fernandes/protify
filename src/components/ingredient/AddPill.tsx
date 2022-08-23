@@ -7,9 +7,9 @@ import SearchPill from './SearchPill';
 
 type Props = {
   ingredientAdd: (newIngredient: Ingredient) => void
-  defaultIngredient: Ingredient
-  isVisible: boolean
-  hideAdd: () => void
+  defaultIngredient?: Ingredient
+  isVisible?: boolean
+  hideAdd?: () => void
 };
 
 interface PillProps {
@@ -35,23 +35,19 @@ function AddContent() {
 export default function AddPill({
   ingredientAdd, defaultIngredient, hideAdd, isVisible = false,
 }: Props) {
-  const [clicked, setClick] = useState(false);
+  const [isSearching, setSearching] = useState(false);
 
   return (
-    <Pill onClick={() => (hideAdd ? hideAdd() : setClick(true))}>
-      {!clicked || !isVisible
+    <Pill onClick={() => (hideAdd ? hideAdd() : setSearching(true))}>
+      {!isSearching || isVisible
         ? <AddContent />
         : (
           <SearchPill
             defaultIngredient={defaultIngredient}
             ingredientAdd={ingredientAdd}
-            hideSearch={() => setClick(false)}
+            hideSearch={() => setSearching(false)}
           />
         )}
     </Pill>
   );
-}
-
-AddPill.defaultProps = {
-  isVisible: false
 }

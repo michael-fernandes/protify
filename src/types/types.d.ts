@@ -20,6 +20,7 @@ export type Ingredient = {
   servingSize: string
   servingSizeUnit: string
   id: string | number
+  proteins?: Nutrient[]
 };
 
 export interface IngredientOption extends Ingredient {

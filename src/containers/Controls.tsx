@@ -1,5 +1,6 @@
-import { useState } from 'react';
+import { useContext } from 'react';
 import styled from 'styled-components';
+import appContext from '../appContext';
 import AddPill from '../components/ingredient/AddPill';
 import { Ingredient } from '../types/types';
 import IngredientPill from './IngredientPill';
@@ -7,20 +8,18 @@ import IngredientPill from './IngredientPill';
 const ControlDiv = styled.div`
   display: flex;
   flex-direction: row;
-  max-width: 1100px;
-  margin: 20px auto;
 `;
 
 export default function Controls() {
-  const [ingredients, setIngredients] = useState<Ingredient[]>([]);
-
+  const { ingredients, setIngredients } = useContext(appContext);
+  console.log(ingredients);
   const handleIngredientAdd = (newIngredient: Ingredient) => {
     setIngredients([...ingredients, newIngredient]);
   };
 
   const handleDelete = (fdcId: string | number) => {
     setIngredients(
-      ingredients.filter((ing) => ing.fdcId === fdcId),
+      ingredients.filter((ing) => ing.fdcId !== fdcId),
     );
   };
 
