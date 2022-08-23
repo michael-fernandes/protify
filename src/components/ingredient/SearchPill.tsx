@@ -1,6 +1,5 @@
 import {
   ChangeEvent,
-  ChangeEventHandler,
   SyntheticEvent,
   useEffect, useMemo, useState,
 } from 'react';
@@ -10,16 +9,18 @@ import {
   Autocomplete, CircularProgress, TextField,
 } from '@mui/material';
 import { throttle } from 'lodash';
-import { Ingredient, IngredientOption } from '../../types/types';
+import { Ingredient, IngredientOption as IngredientOpt } from '../../types/types';
 import searchFoods from '../../api/searchFoods';
+import getProtein from '../../utilities/getProtein';
 
 type Props = {
   ingredientAdd: (newIngredient: Ingredient) => void
   hideSearch: () => void
+  defaultIngredient?: Ingredient | undefined
 };
 
-export default function SearchPill({ ingredientAdd, hideSearch }: Props) {
-  const [search, setSearch] = useState('');
+export default function SearchPill({ ingredientAdd, hideSearch, defaultIngredient }: Props) {
+  const [search, setSearch] = useState(defaultIngredient?.description || '');
   const [searchDebounced, setSearchDebounce] = useState('');
 
   const { data = [], status } = useQuery(['search', searchDebounced], searchFoods, {
@@ -30,14 +31,21 @@ export default function SearchPill({ ingredientAdd, hideSearch }: Props) {
 
   useEffect(() => throttleSearch(search), [search]);
 
-  const foodOptions = useMemo((): IngredientOption[] => data?.foods?.map(
-    (food: Ingredient) => ({
-      ...food,
-      label: food.description,
-      id: food.fdcId,
-    }),
-  ) || [], [data]);
-  console.log(foodOptions);
+  const foodOptions = useMemo((): IngredientOpt[] => {
+    const { foods } = data;
+    return foods?.reduce((acc: Ingredient[], currItem: Ingredient): IngredientOpt[] => {
+      const proteins = getProtein(currItem);
+      if (Object.keys(proteins).length) {
+        acc.push({
+          ...currItem,
+          label: currItem.description || '',
+          id: currItem.fdcId,
+        });
+      }
+      return acc;
+    }, []);
+  }, [data]) || [];
+
   const handleInputChange = (
     event: ChangeEvent<HTMLTextAreaElement | HTMLInputElement>,
   ) => {
@@ -47,6 +55,7 @@ export default function SearchPill({ ingredientAdd, hideSearch }: Props) {
   const handleAutocompleteChange = (_: SyntheticEvent<Element, Event>, value: any) => {
     if (value) {
       ingredientAdd(value);
+      setSearch('');
       hideSearch();
     }
   };
@@ -62,9 +71,8 @@ export default function SearchPill({ ingredientAdd, hideSearch }: Props) {
         onChange={handleAutocompleteChange}
         filterOptions={(x) => x}
         options={foodOptions}
-        clearOnEscape
         inputValue={search}
-        getOptionLabel={(option: IngredientOption) => option.label}
+        getOptionLabel={(option: IngredientOpt) => option.label}
         renderOption={(props, option) => (
           // eslint-disable-next-line react/jsx-props-no-spreading
           <li {...props} key={option.id}>
@@ -80,6 +88,9 @@ export default function SearchPill({ ingredientAdd, hideSearch }: Props) {
             onChange={handleInputChange}
           />
         )}
+        autoHighlight
+        clearOnEscape
+        selectOnFocus
       />
     </div>
   );

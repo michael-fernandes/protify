@@ -7,7 +7,7 @@ export type Nutrient = {
 
 export type Ingredient = {
   description: string
-  fdcId: number
+  fdcId: number | string
   foodNutrients: Nutrient[]
   additionalDescriptions: 'other beans;tofu;with vegetables;chickpea'
   allHighlightFields: string
@@ -19,10 +19,11 @@ export type Ingredient = {
   label: string
   servingSize: string
   servingSizeUnit: string
+  id: string | number
 };
 
 export interface IngredientOption extends Ingredient {
-  id: string
+  id: string | number
   label: string
 }
 

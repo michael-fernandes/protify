@@ -1,4 +1,4 @@
-export const proteinLookups = {
+const AMINO_ACID_LOOKUP = {
   Histidine: 1221,
   Leucine: 1213,
   Isoleucine: 1212,
@@ -11,5 +11,5 @@ export const proteinLookups = {
   Sodium: 1693761,
 };
 
-export const proteinIds = Object.values(proteinLookups);
-export const proteinNames = Object.keys(proteinLookups);
+export const ESSENTIAL_AMINO_ACID_IDS = Object.values(AMINO_ACID_LOOKUP);
+export const ESSENTIAL_AMINO_ACID_NAMES = Object.keys(AMINO_ACID_LOOKUP);
